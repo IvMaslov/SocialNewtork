@@ -1,0 +1,11 @@
+database:
+    url: "postgresql://root:root@localhost:32700/social_network"
+
+security:
+    secret_key: "ba79cf15a9614a49b72be3b0f1f75587b3233456f2ef69fe83ed46cd5a60711c"
+    token_expires: 20
+    algorithm: "HS256"
+
+redis:
+    host: "localhost"
+    port: 32701
