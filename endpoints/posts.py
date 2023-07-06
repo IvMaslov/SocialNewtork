@@ -51,6 +51,7 @@ async def update(
     ) -> Union[Post, JSONResponse]:
     if len(post_in.title) > 255:
         return JSONResponse(content={"message": "title too long"}, status_code=400)
+    
     user_id = posts_repository.get_user_id(post_in.post_id)
     if user_id != current_user.user_id:
         return JSONResponse(content={"message": "access forbiden"}, status_code=403)
@@ -67,6 +68,7 @@ async def delete(
         user_id = await posts_repository.get_user_id(post_id=post_id)
     except ValidationError:
         return JSONResponse(content={"message": "access forbiden"}, status_code=403)
+    
     if user_id != current_user.user_id:
         return JSONResponse(content={"message": "access forbiden"}, status_code=403)
     await posts_repository.delete(post_id=post_id)
