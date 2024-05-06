@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | Reflections</title>
+</head>
+<body>
+    <div class="container">
+        <div class="signup-box">
+            <h2>Create an Account on Reflections</h2>
+            <div>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password2" name="password" required>
+                </div>
+                <button type="submit" style="width: 100%;" id="btn" onclick="signup()">Sign Up</button>
+            </div>
+            <p class="login-link">Already have an account? <a href="login">Log In</a></p>
+        </div>
+    </div>
+
+    <style>
+        /* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f3f3;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.signup-box {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 400px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.btn-animation {
+    animation-name: shake, glow-red; 
+    animation-duration: 0.7s, 0.35s; 
+    animation-iteration-count: 1, 2;
+}
+
+@keyframes shake {
+  0%, 20%, 40%, 60%, 80% {
+    transform: translateX(8px);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-8px);
+  }
+}
+
+@keyframes glow-red {
+  50% {
+    border-color: indianred;
+  }
+}
+
+button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 0;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.login-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+    </style>
+
+    <script>
+        async function signup() {
+            let email = document.getElementById("email")
+            let password = document.getElementById("password")
+            let password2 = document.getElementById("password2")
+            let btn = document.getElementById("btn")
+
+            console.log(password)
+
+            if (password.value != password2.value) {
+                btn.classList.add("btn-animation")
+
+                await remove_animation()
+                return
+            }
+
+            const response = await fetch("api/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({"email": email.value, "password": password.value})
+            })
+
+            if (response.status === 200) {
+                window.location.href = "login"
+            } else {
+                btn.classList.add("btn-animation")
+
+                await remove_animation()
+                return
+            }
+        }
+
+        async function remove_animation() {
+            setTimeout(() => {
+                document.getElementById("btn").classList.remove("btn-animation")
+            }, 800)
+        }
+    </script>
+</body>
+</html>

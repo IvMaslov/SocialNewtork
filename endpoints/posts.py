@@ -21,7 +21,7 @@ async def get_by_user(
     return await posts_repository.get_by_user(current_user.user_id) # type: ignore
 
 
-@router.get("/newests")
+@router.get("/newest")
 async def get_newests(
         page: int,
         current_user: Annotated[User, Depends(get_current_user)],
@@ -52,7 +52,7 @@ async def update(
     if len(post_in.title) > 255:
         return JSONResponse(content={"message": "title too long"}, status_code=400)
     
-    user_id = posts_repository.get_user_id(post_in.post_id)
+    user_id = await posts_repository.get_user_id(post_in.post_id)
     if user_id != current_user.user_id:
         return JSONResponse(content={"message": "access forbiden"}, status_code=403)
     return await posts_repository.update(Post(post_id=post_in.post_id, user_id=current_user.user_id, title=post_in.title, text=post_in.text, created_at=datetime.now())) # type: ignore
@@ -73,3 +73,27 @@ async def delete(
         return JSONResponse(content={"message": "access forbiden"}, status_code=403)
     await posts_repository.delete(post_id=post_id)
     return JSONResponse(content={"message": "successfully deleted"})
+
+
+@router.get("/index", responses={401: {"model": Message}, 403: {"model": Message}, 200: {"model": Message}})
+async def get_by_id(
+        index: int, 
+        current_user: Annotated[User, Depends(get_current_user)],
+        posts_repository: PostsRepository = Depends(get_posts_repository)    
+    ) -> JSONResponse:
+    if index < 1:
+        index = 1
+    return await posts_repository.get_by_id(index)
+
+
+@router.get("/ismypost", responses={401: {"model": Message}, 403: {"model": Message}, 200: {"model": Message}})
+async def get_ismypost(
+        post_id: int,
+        current_user: Annotated[User, Depends(get_current_user)],
+        posts_repository: PostsRepository = Depends(get_posts_repository)   
+    ) -> JSONResponse:
+    try:
+        user_id = await posts_repository.get_user_id(post_id=post_id)
+    except ValidationError:
+        return JSONResponse(content={"message": "not found"}, status_code=403)
+    return JSONResponse(content={"ismypost": user_id == current_user.user_id})

@@ -9,7 +9,7 @@ from .security import decode_access_token
 from endpoints.depends import get_user_repository
 
 
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/login")
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)], user_repository: UsersRepository = Depends(get_user_repository)) -> User:

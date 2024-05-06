@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Reflections</title>
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h2>Login to Reflections</h2>
+            <div>
+                <div class="input-group">
+                    <label for="username">Email</label>
+                    <input type="text" id="email" name="email" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" style="width: 100%;" id="btn" onclick="login()">Login</button>
+            </div>
+            <p class="signup-link">Don't have an account? <a href="signup">Sign Up</a></p>
+        </div>
+    </div>
+
+    <style>
+        /* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f3f3;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.login-box {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 400px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.btn-animation {
+    animation-name: shake, glow-red; 
+    animation-duration: 0.7s, 0.35s; 
+    animation-iteration-count: 1, 2;
+}
+
+@keyframes shake {
+  0%, 20%, 40%, 60%, 80% {
+    transform: translateX(8px);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-8px);
+  }
+}
+
+@keyframes glow-red {
+  50% {
+    border-color: indianred;
+  }
+}
+
+button {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 0;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.signup-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+    </style>
+
+    <script>
+        window.onload = () => {
+            localStorage.removeItem("reflections_token")
+        }
+
+        async function login() {
+            let email = document.getElementById("email")
+            let password = document.getElementById("password")
+
+            let formData = []
+            formData.push("username="+encodeURIComponent(email.value))
+            formData.push("password="+encodeURIComponent(password.value))
+            formData = formData.join("&")
+
+            const response = await fetch("api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: formData
+            })
+
+            if (response.status === 200) {
+                let data = await response.json()
+                localStorage.setItem("reflections_token", data.token_type + " " + data.access_token)
+
+                window.location.href = "main"
+            } else {
+                btn.classList.add("btn-animation")
+
+                await remove_animation()
+                return
+            }
+        }
+
+        async function remove_animation() {
+            setTimeout(() => {
+                document.getElementById("btn").classList.remove("btn-animation")
+            }, 800)
+        }
+    </script>
+</body>
+</html>

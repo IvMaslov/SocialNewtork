@@ -35,10 +35,14 @@ class PostsRepository(BaseRepository):
         return Post.parse_obj(resp).user_id
 
     async def get_by_user(self, user_id: int) -> List:
-        query = posts.select().with_only_columns([posts.c.user_id, posts.c.title, posts.c.text, posts.c.created_at]).where(posts.c.user_id==user_id)
+        query = posts.select().where(posts.c.user_id==user_id)
         return await self.database.fetch_all(query=query) 
     
     async def get_newests(self, page: int):
-        start = 10*(page-1)
-        query = posts.select().order_by(desc(posts.c.created_at)).limit(10).offset(start)
+        start = 12*(page-1)
+        query = posts.select().order_by(desc(posts.c.created_at)).limit(12).offset(start)
         return await self.database.fetch_all(query=query)
+    
+    async def get_by_id(self, post_id: int):
+        query = posts.select().where(posts.c.post_id==post_id)
+        return await self.database.fetch_one(query=query)

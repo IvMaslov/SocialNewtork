@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflections</title>
+</head>
+<body>
+    <div class="screen">
+        <header class="header">
+            <div class="container">
+                <h1 class="logo">Reflections</h1>
+                <nav class="main-nav">
+                    <ul>
+                        <li><a href="main">Home</a></li>
+                        <li><a href="myposts">My posts</a></li>
+                        <li><a href="main" onclick="logout()">Logout</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+    
+        <div class="content">
+            <div class="container" id="postContainer">
+                <!-- fill with js -->
+            </div>
+
+            <div class="pagination", id="settings">
+                <!-- fill with js -->
+            </div>
+        </div>
+    
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2024 Reflections. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+    <style>
+        /* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    /* box-sizing: border-box; */
+}
+
+/* Global Styles */
+.screen {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.header {
+    background-color: #000000;
+    color: #fff;
+    padding: 20px 0;
+}
+
+.logo {
+    font-size: 24px;
+}
+
+.main-nav ul {
+    list-style: none;
+}
+
+.main-nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+.main-nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Hero Section */
+.hero {
+    background-color: #f4f4f4;
+    padding: 50px 0;
+    text-align: center;
+}
+
+/* Content Section */
+.content {
+    padding: 50px 0;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjust as needed */
+    grid-gap: 20px; /* Adjust as needed */
+}
+
+.post {
+    margin-bottom: 40px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+}
+
+#update-btn {
+    margin-left: 20px;
+}
+
+#delete-btn {
+    margin-right: 20px;
+    background-color: rgb(255, 62, 62);
+}
+
+#delete-btn:hover {
+    background-color: rgb(255, 0, 0);
+}
+
+#save-btn {
+    margin-right: 20px;
+    background-color: rgba(0, 255, 13, 0.616);
+    color: black;
+}
+
+#save-btn:hover {
+    background-color: rgba(0, 255, 42, 0.24);
+}
+
+.post-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+    height: 30px;
+    overflow: hidden;
+}
+
+.post-meta {
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.post-content {
+    line-height: 1.6;
+    height: 80px;
+    overflow: hidden;
+}
+
+.read-more {
+    display: inline-block;
+    background-color: #000000;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.read-more:hover {
+    background-color: #555;
+}
+
+.title-inp {
+    margin-bottom: 10px;
+    font-size: 24px;
+    height: 30px;
+}
+
+.text-inp {
+    line-height: 1.6;
+    width: 100%;
+}
+
+/* Footer */
+.footer {
+    background-color: #000000;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+}
+
+    </style>
+
+<script>
+    var index = 1
+
+    window.onload = async function () {
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const myParam = urlParams.get('index');
+
+        if (myParam != null) {
+            index = myParam
+        }
+
+        index = Number(index)
+
+        let response = await fetch("api/posts/index?index=" + index, {
+            headers: {
+                "Authorization": localStorage.getItem("reflections_token")
+            }
+        })
+        if (response.status != 200) {
+            logout()
+            window.location.href = "login"
+
+            return
+        }
+
+        let response2 = await fetch("api/posts/ismypost?post_id=" + index, {
+            headers: {
+                "Authorization": localStorage.getItem("reflections_token")
+            }
+        })
+
+        let ismypost = await response2.json()
+
+        if (ismypost.ismypost) {
+            let settings = document.getElementById("settings")
+
+            let deleteBtn = document.createElement("a")
+            deleteBtn.onclick = () => { deletePost() }
+            deleteBtn.classList.add("read-more")
+            deleteBtn.id = "delete-btn"
+            deleteBtn.textContent = "Delete Post"
+
+            let updateBtn = document.createElement("a")
+            updateBtn.onclick = () => { updatePost() }
+            updateBtn.classList.add("read-more")
+            updateBtn.id = "update-btn"
+            updateBtn.textContent = "Update Post"
+
+            settings.appendChild(deleteBtn)
+            settings.appendChild(updateBtn)
+        }
+
+        let data = await response.json()
+
+        let postContainer = document.getElementById("postContainer")
+
+        let htmlElement = getPostByObject(data)
+        postContainer.appendChild(htmlElement)
+        
+    }
+
+    function logout() {
+        localStorage.removeItem("reflections_token")
+    }
+
+    function getPostByObject(element) {
+        let div = document.createElement("div")
+        div.classList.add("post")
+        div.id = "post"
+
+        let h2 = document.createElement("h2")
+        h2.classList.add("post-title")
+        h2.textContent = element.title
+        h2.id = "title"
+
+        let meta = document.createElement("p")
+        meta.classList.add("post-meta")
+        let d = new Date(element.created_at)
+        const options = { month: 'long', day: 'numeric', year: 'numeric' };
+        meta.textContent = d.toLocaleDateString('en-US', options);
+
+        let data = document.createElement("p")
+        data.classList.add("post-content")
+        data.textContent = element.text
+        data.id = "text"
+
+        div.appendChild(h2)
+        div.appendChild(meta)
+        div.appendChild(data)
+
+        return div
+    }
+
+    async function deletePost() {
+        let response = await fetch("api/posts/delete?post_id=" + index, {
+            method: "DELETE",
+            headers: {
+                "Authorization": localStorage.getItem("reflections_token")
+            }
+        })
+
+        if (response.status != 200) {
+            window.location.href = "login"
+        } else {
+            window.location.href = "myposts"
+        }
+    }
+
+    async function updatePost() {
+        // TODO: Create post
+
+        let parent  = document.getElementById("post")
+        let settings = document.getElementById("settings")
+        let title = document.getElementById("title")
+        let text = document.getElementById("text")
+
+        let titleInp = document.createElement("input")
+        titleInp.type = "text"
+        titleInp.value = title.textContent
+        titleInp.classList.add("title-inp")
+        titleInp.id = "title-inp"
+
+        let textInp = document.createElement("input")
+        textInp.type = "text"
+        textInp.value = text.textContent
+        textInp.classList.add("text-inp")
+        textInp.id = "text-inp"
+
+        let saveBtn = document.createElement("a")
+        saveBtn.classList.add("read-more")
+        saveBtn.textContent = "Save"
+        saveBtn.id = "save-btn"
+        saveBtn.onclick = () => { savePost() }
+
+        let cancelBtn = document.createElement("a")
+        cancelBtn.textContent = "Cancel"
+        cancelBtn.id = "cancel-btn"
+        cancelBtn.classList.add("read-more")
+        cancelBtn.onclick = () => { cancelPost() }
+
+
+        parent.replaceChild(titleInp, title)
+        parent.replaceChild(textInp, text)
+        settings.replaceChild(saveBtn, document.getElementById("delete-btn"))
+        settings.replaceChild(cancelBtn, document.getElementById("update-btn"))
+    }
+
+    async function cancelPost() {
+        window.location.href = "myposts"
+    }
+
+    async function savePost() {
+        let title = document.getElementById("title-inp")
+        let text = document.getElementById("text-inp")
+
+        let response = await fetch("api/posts/update", {
+            method: "PUT",
+            headers: {
+                "Authorization": localStorage.getItem("reflections_token"),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({"post_id": index, "title": title.value, "text": text.value})
+        })
+
+        if (response.status != 200) {
+            window.location.href = "login"
+        } else {
+            window.location.href = "myposts"
+        }
+    }
+
+</script>
+</body>
+</html>

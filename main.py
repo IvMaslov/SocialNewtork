@@ -1,14 +1,15 @@
 from fastapi import FastAPI
 from db.postgres.base import database
-from endpoints import login, signup, posts, likes, dislikes
+from endpoints import login, signup, posts, likes, dislikes, static
 
 app = FastAPI()
 
-app.include_router(login.router, prefix="/login", tags=["login"])
-app.include_router(signup.router, prefix="/signup", tags=["signup"])
-app.include_router(posts.router, prefix="/posts", tags=["posts"])
-app.include_router(likes.router, prefix="/likes", tags=["likes"])
-app.include_router(dislikes.router, prefix="/dislike", tags=["dislike"])
+app.include_router(login.router, prefix="/api/login", tags=["login"])
+app.include_router(signup.router, prefix="/api/signup", tags=["signup"])
+app.include_router(posts.router, prefix="/api/posts", tags=["posts"])
+app.include_router(likes.router, prefix="/api/likes", tags=["likes"])
+app.include_router(dislikes.router, prefix="/api/dislike", tags=["dislike"])
+app.include_router(static.router, prefix="", tags=["main"])
 
 
 @app.on_event("startup")

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflections</title>
+    <!-- <link rel="stylesheet" href="static/main.css"> -->
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">Reflections</h1>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="main">Home</a></li>
+                    <li><a href="myposts">My posts</a></li>
+                    <li><a href="main" onclick="logout()">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="hero">
+        <div class="container">
+            <h2>Welcome to Reflections</h2>
+            <p>This is where you can find amazing stories and articles on various topics.</p>
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="container">
+            <div class="posts-grid" id="postContainer"></div>
+            <!-- More articles can go here | fill with js -->
+
+            <div class="pagination">
+                <a class="read-more" id="prev-btn">Prev page</a>
+                <a class="read-more" id="next-btn">Next page</a>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Reflections. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <style>
+        /* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.header {
+    background-color: #000000;
+    color: #fff;
+    padding: 20px 0;
+}
+
+.logo {
+    font-size: 24px;
+}
+
+.main-nav ul {
+    list-style: none;
+}
+
+.main-nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+.main-nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Hero Section */
+.hero {
+    background-color: #f4f4f4;
+    padding: 50px 0;
+    text-align: center;
+}
+
+/* Content Section */
+.content {
+    padding: 50px 0;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Adjust as needed */
+    grid-gap: 20px; /* Adjust as needed */
+}
+
+.pagination {
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+}
+
+#next-btn {
+    margin-left: 20px;
+}
+
+#prev-btn {
+    margin-right: 20px;
+}
+
+.post {
+    margin-bottom: 40px;
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-title {
+    font-size: 24px;
+    margin-bottom: 10px;
+    height: 30px;
+    overflow: hidden;
+}
+
+.post-meta {
+    color: #888;
+    margin-bottom: 10px;
+}
+
+.post-content {
+    line-height: 1.6;
+    height: 80px;
+    overflow: hidden;
+}
+
+.read-more {
+    display: inline-block;
+    background-color: #000000;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.read-more:hover {
+    background-color: #555;
+}
+
+/* Footer */
+.footer {
+    background-color: #000000;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+}
+
+    </style>
+
+    <script>
+        var page = 1
+
+        window.onload = async function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('page');
+
+            if (myParam != null) {
+                page = myParam
+            }
+
+            page = Number(page)
+
+            let nextPage = document.getElementById("next-btn")
+            let prevPage = document.getElementById("prev-btn")
+
+            if (page === 1) {
+                prevPage.style = "pointer-events: none; background-color: #444;"
+            }
+
+            prevPage.href = "main?page=" + (page - 1)
+            nextPage.href = "main?page=" + (page + 1)
+
+            let response = await fetch("api/posts/newest?page=" + page, {
+                headers: {
+                    "Authorization": localStorage.getItem("reflections_token")
+                }
+            })
+            if (response.status != 200) {
+                logout()
+                window.location.href = "login"
+
+                return
+            }
+
+            let data = await response.json()
+
+            let postContainer = document.getElementById("postContainer")
+
+            data.forEach(element => {
+                let htmlElement = getPostByObject(element)
+                postContainer.appendChild(htmlElement)
+            })
+
+            if (data.length < 12) {
+                nextPage.style = "pointer-events: none; background-color: #444;"
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem("reflections_token")
+        }
+
+        function getPostByObject(element) {
+            let div = document.createElement("div")
+            div.classList.add("post")
+
+            let h2 = document.createElement("h2")
+            h2.classList.add("post-title")
+            h2.textContent = element.title
+
+            let meta = document.createElement("p")
+            meta.classList.add("post-meta")
+            let d = new Date(element.created_at)
+            const options = { month: 'long', day: 'numeric', year: 'numeric' };
+            meta.textContent = d.toLocaleDateString('en-US', options);
+
+            let data = document.createElement("p")
+            data.classList.add("post-content")
+            data.textContent = element.text
+
+            let link = document.createElement("a")
+            link.classList.add("read-more")
+            link.href = "index?index=" + element.post_id
+            link.textContent = "Read More"
+
+            div.appendChild(h2)
+            div.appendChild(meta)
+            div.appendChild(data)
+            div.appendChild(link)
+
+            return div
+        }
+    </script>
+</body>
+</html>
